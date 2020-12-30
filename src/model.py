@@ -111,12 +111,14 @@ def main():
     embeddings_samples, ori_emb_samples, original_features, labels, ot, trips, pattern = fetch_features(path_1, path_2, path_3, -1)
     labels_one_hot = to_categorical(labels, num_classes=166)
 
-    split = len(labels) - 100000
+    split = int(len(labels) * 0.9)
+
     train_X = [embeddings_samples[:split], ori_emb_samples[:split], original_features[:split]]
     train_y = labels_one_hot[:split]
+
     test_X = [embeddings_samples[split:], ori_emb_samples[split:], original_features[split:]]
     test_y = labels_one_hot[split:]
-    ot_test, trips_test, pattern_test = ot[split:], trips[split:], pattern[split:]
+    ot_test = ot[split:]
 
     input_1 = Input(shape=embeddings_samples.shape[1:])
     input_2 = Input(shape=ori_emb_samples.shape[1:])
@@ -189,7 +191,7 @@ def main():
     pred_argmax = np.argmax(pred, axis=1)
     true_argmax = np.argmax(test_y, axis=1)
     count = sum([1 if pred_argmax[i] == true_argmax[i] else 0 for i in range(len(pred))])
-    print("\nTest samples: %d, accuracy: %.2f%%" % (len(pred), count / len(pred) * 100))
+    print("\nTest %d samples, accuracy: %.2f%%" % (len(pred), count / len(pred) * 100))
 
     ot_acc, ot_num = [0] * 12, [0] * 12
     for i in range(len(pred)):
